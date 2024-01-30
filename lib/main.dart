@@ -105,8 +105,12 @@ class _MyApp extends State<MyApp> {
           width: double.maxFinite,
           height: double.maxFinite,
           decoration: const BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage("asset/image1.jpg"), fit: BoxFit.cover)),
+            // gradient:LinearGradient(colors: Colors.white),
+            image: DecorationImage(
+                image: AssetImage("asset/image1.jpg"),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.linearToSrgbGamma()),
+          ),
           child: SafeArea(
             child: Column(
               children: [
@@ -143,9 +147,9 @@ class _MyApp extends State<MyApp> {
                         : Center(
                             child: Image.file(
                               _image!,
-                              fit: BoxFit.cover,
-                              width: 270,
-                              height: 320,
+                              fit: BoxFit.fill,
+                              width: 268,
+                              height: 318,
                             ),
                           ),
                   ]),
@@ -183,15 +187,21 @@ class _MyApp extends State<MyApp> {
                 ),
                 Expanded(
                   child: _image == null
-                      ? Text("Please Upload The Image",
-                          style: TextStyle(
-                              fontSize: 35, fontWeight: FontWeight.w700),
-                          textAlign: TextAlign.center)
-                      : result?.length == null
-                          ? const Text("No Caption found",
-                              style: TextStyle(
-                                  fontSize: 35, fontWeight: FontWeight.w700),
-                              textAlign: TextAlign.center)
+                      ? const Center(
+                          child: Text(
+                            "Please Upload The Image",
+                            style: TextStyle(
+                                fontSize: 27, fontWeight: FontWeight.w700),
+                          ),
+                        )
+                      : result!.isEmpty
+                          ? const Center(
+                              child: Text("No Caption found",
+                                  style: TextStyle(
+                                      fontSize: 27,
+                                      fontWeight: FontWeight.w700),
+                                  textAlign: TextAlign.center),
+                            )
                           : ListView.builder(
                               itemCount: result!.length,
                               // gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -204,7 +214,7 @@ class _MyApp extends State<MyApp> {
 
                                     "  ${index.toString()}  ${result![index]}",
                                     style: const TextStyle(
-                                      fontSize: 28,
+                                      fontSize: 25,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.black,
                                     ),
