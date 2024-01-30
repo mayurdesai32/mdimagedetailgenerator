@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,6 +16,71 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyApp extends State<MyApp> {
+  late ImagePicker _picker;
+  File? _image;
+  dynamic imageLabeler;
+  // List<Map<String, dynamic>>? result = [];
+  List<String>? result = [];
+  @override
+  void initState() {
+    super.initState();
+    _picker = ImagePicker();
+    final ImageLabelerOptions options =
+        ImageLabelerOptions(confidenceThreshold: 0.5);
+    imageLabeler = ImageLabeler(options: options);
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  chooseImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _image = File(image.path);
+      });
+      doImageLabel();
+    }
+  }
+
+  cameraImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      setState(() {
+        _image = File(image.path);
+      });
+      doImageLabel();
+    }
+  }
+
+  doImageLabel() async {
+    InputImage inputImage = InputImage.fromFile(_image!);
+    print(_image);
+    final List<ImageLabel> labels = await imageLabeler.processImage(inputImage);
+    result!.clear();
+    for (ImageLabel label in labels) {
+      setState(() {
+        result!.add(
+            "${label.label}  confidence ${label.confidence.toStringAsFixed(2)}"
+            //   {
+            //   "text": label.label,
+            //   "index": label.index,
+            //   "confidence": label.confidence
+            // }
+            );
+      });
+
+      // final double confidence = label.confidence;
+    }
+    print("*************************");
+    print(result);
+    print(result?.length);
+    print("*************************");
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -24,7 +93,7 @@ class _MyApp extends State<MyApp> {
               color: Color.fromARGB(255, 180, 129, 111),
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: const Text(
-                "Image Caption Generator",
+                "MDImage Caption",
                 style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 30,
@@ -63,13 +132,22 @@ class _MyApp extends State<MyApp> {
                         ),
                       ),
                     ),
-                    const Center(
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        size: 140,
-                        color: Colors.black,
-                      ),
-                    ),
+                    _image == null
+                        ? const Center(
+                            child: Icon(
+                              Icons.camera_alt_outlined,
+                              size: 140,
+                              color: Colors.black,
+                            ),
+                          )
+                        : Center(
+                            child: Image.file(
+                              _image!,
+                              fit: BoxFit.cover,
+                              width: 270,
+                              height: 320,
+                            ),
+                          ),
                   ]),
                 ),
                 const SizedBox(height: 10),
@@ -86,7 +164,12 @@ class _MyApp extends State<MyApp> {
                       // end
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    chooseImage();
+                  },
+                  onLongPress: () {
+                    cameraImage();
+                  },
                   child: const Padding(
                     padding: EdgeInsets.all(10.0),
                     child: Text(
@@ -99,53 +182,36 @@ class _MyApp extends State<MyApp> {
                   height: 10,
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: 15,
-                    // gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    //     crossAxisCount: 1, childAspectRatio: 2),
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 15.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              index.toString(),
-                              style: const TextStyle(
-                                fontSize: 35,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black,
-                                // backgroundColor: Colors.white
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "Hat",
+                  child: _image == null
+                      ? Text("Please Upload The Image",
+                          style: TextStyle(
+                              fontSize: 35, fontWeight: FontWeight.w700),
+                          textAlign: TextAlign.center)
+                      : result?.length == null
+                          ? const Text("No Caption found",
                               style: TextStyle(
-                                fontSize: 35,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black,
-                                // backgroundColor: Colors.white
-                              ),
+                                  fontSize: 35, fontWeight: FontWeight.w700),
+                              textAlign: TextAlign.center)
+                          : ListView.builder(
+                              itemCount: result!.length,
+                              // gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              //     crossAxisCount: 1, childAspectRatio: 2),
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 15.0),
+                                  child: Text(
+                                    // ${label.index.toString()}
+
+                                    "  ${index.toString()}  ${result![index]}",
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                            const SizedBox(
-                              width: 20,
-                            ),
-                            Text(
-                              "confidence 90%",
-                              style: TextStyle(
-                                fontSize: 35,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
                 )
               ],
             ),
