@@ -36,14 +36,6 @@ class _MyApp extends State<MyApp> {
     super.dispose();
   }
 
-  bool isTablet(BuildContext context) {
-    // Get the screen size
-    Size screenSize = MediaQuery.of(context).size;
-
-    // Determine if the screen width is greater than or equal to 600
-    return screenSize.shortestSide >= 600;
-  }
-
   chooseImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -109,7 +101,7 @@ class _MyApp extends State<MyApp> {
               ),
             ),
             centerTitle: true),
-        body: LayoutBuilder(builder: (context, Constraints) {
+        body: LayoutBuilder(builder: (context, constraints) {
           return Container(
             width: double.maxFinite,
             height: double.maxFinite,
@@ -121,7 +113,7 @@ class _MyApp extends State<MyApp> {
                   colorFilter: ColorFilter.linearToSrgbGamma()),
             ),
             child: SafeArea(
-              child: Constraints.maxHeight < Constraints.maxWidth
+              child: constraints.maxHeight < constraints.maxWidth
                   ? const Center(
                       child: Text(
                       "You can't veiw in Landscape mode",
